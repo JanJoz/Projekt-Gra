@@ -8,12 +8,6 @@ public:
     void poruszanie()
     {
             sf::FloatRect rectangle_bounds = this->getGlobalBounds();
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && windup < rectangle_bounds.top) {
-                this->move(0, -0.1);
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && winddown > rectangle_bounds.top + rectangle_bounds.height) {
-                this->move(0, 0.1);
-            }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && windleft < rectangle_bounds.left) {
                 this->move(-0.1, 0);
             }
@@ -31,8 +25,28 @@ public:
         windleft = bohater.left;
         windright = bohater.left + bohater.width;
     }
-    void grawitacja(sf::IntRect bohater)
+    void grawitacja(sf::IntRect bohater, sf::IntRect podloga)
     {
+
+        
+
+    }
+    void skakansko(sf::FloatRect podloga)
+    {
+        sf::FloatRect rectangle_bounds = this->getGlobalBounds();
+        if (rectangle_bounds.intersects(podloga))
+        {
+
+        }
+        else
+        {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+                this->move(0, -0.4);
+            }
+            
+        }
+
+
 
     }
     void bounce()
@@ -111,11 +125,18 @@ int main()
 
     sf::Vector2f size_floor(1200, 60);
     sf::Vector2f position_floor(0, 940);
-    floorr floorr(size_floor, position_floor);
+    floorr floorr1(size_floor, position_floor);
 
     sf::Texture podloga;
     podloga.loadFromFile("floor.png");
-    floorr.setTexture(&podloga);
+    floorr1.setTexture(&podloga);
+
+
+
+    sf::Vector2f size_floor2(400, 60);
+    sf::Vector2f position_floor2(500, 500);
+    floorr floorr2(size_floor2, position_floor2);
+    floorr2.setTexture(&podloga);
 
 
     
@@ -141,11 +162,23 @@ int main()
 
         sf::FloatRect rectangle_bounds = bohater.getGlobalBounds();
         window.draw(bohater);
-        window.draw(floorr);
+        window.draw(floorr1);
+        window.draw(floorr2);
         bohater.poruszanie();
 
         window.display();
 
+        if ((bohater.getGlobalBounds().intersects(floorr1.getGlobalBounds()  )|| (bohater.getGlobalBounds().intersects(floorr2.getGlobalBounds()))))
+        {
+            
+        }
+        else
+        {
+            bohater.move(0, 0.2);
+        }
+        sf::FloatRect rectangle_bounds2 = floorr1.getGlobalBounds();
+        sf::FloatRect rectangle_bounds3 = floorr2.getGlobalBounds();
+        bohater.skakansko(rectangle_bounds3);
     }
 
     return 0;
