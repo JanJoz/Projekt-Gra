@@ -72,9 +72,9 @@ private:
 
 };
 
-class floor : public sf::RectangleShape {
+class floorr : public sf::RectangleShape {
 public:
-    floor(sf::Vector2f size, sf::Vector2f position)
+    floorr(sf::Vector2f size, sf::Vector2f position)
         : sf::RectangleShape(size) { this->setPosition(position); }
  
     void setBounds(sf::IntRect floor)
@@ -109,13 +109,13 @@ int main()
     bohater.setTexture(&teksturabohatera);
     
 
-    sf::Vector2f size_floor(1200, 20);
-    sf::Vector2f position_floor(0, 1000);
-    floor floor(size_floor, position_floor);
+    sf::Vector2f size_floor(1200, 60);
+    sf::Vector2f position_floor(0, 940);
+    floorr floorr(size_floor, position_floor);
 
     sf::Texture podloga;
-    teksturabohatera.loadFromFile("floor.png");
-    floor.setTexture(&podloga);
+    podloga.loadFromFile("floor.png");
+    floorr.setTexture(&podloga);
 
 
     
@@ -141,6 +141,7 @@ int main()
 
         sf::FloatRect rectangle_bounds = bohater.getGlobalBounds();
         window.draw(bohater);
+        window.draw(floorr);
         bohater.poruszanie();
 
         window.display();
