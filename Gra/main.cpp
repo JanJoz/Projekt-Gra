@@ -25,30 +25,102 @@ public:
         windleft = bohater.left;
         windright = bohater.left + bohater.width;
     }
-    void grawitacja(sf::IntRect bohater, sf::IntRect podloga)
+    void grawitacja(sf::FloatRect podloga, sf::FloatRect podloga2)
     {
+        if ((this->getGlobalBounds().intersects(podloga) || (this->getGlobalBounds().intersects(podloga2))))
+        {
 
+        }
+        else
+        {
+            this->move(0, 0.2);
+        }
         
 
     }
     void skakansko(sf::FloatRect podloga)
     {
         sf::FloatRect rectangle_bounds = this->getGlobalBounds();
-        if (rectangle_bounds.intersects(podloga))
-        {
+        for (int i = 0; i < 500;i++) {
 
-        }
-        else
-        {
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+
+            if (rectangle_bounds.intersects(podloga))
+            {
+                this->move(0, 0.4);
+            }
+            else
+            {
                 this->move(0, -0.4);
             }
-            
         }
 
 
 
     }
+    void bounce()
+    {
+        sf::FloatRect rectangle_bounds = this->getGlobalBounds();
+        if (rectangle_bounds.left <= windleft)
+        {
+            a_x = 1;
+        }
+        if (rectangle_bounds.top + rectangle_bounds.height >= winddown)
+        {
+            a_y = -1;
+        }
+        if (rectangle_bounds.left + rectangle_bounds.width >= windright)
+        {
+            a_x = -1;
+        }
+        if (rectangle_bounds.top <= windup)
+        {
+            a_y = 1;
+        }
+    }
+
+private:
+    int speed_x = 0;
+    int speed_y = 0;
+    int speed_z = 0;
+    int winddown = 0;
+    int windup = 0;
+    int windleft = 0;
+    int windright = 0;
+    int a_x = 0;
+    int a_y = 0;
+    bool is_selected = false;
+
+
+
+};
+
+class przeciwnik : public sf::RectangleShape {
+public:
+    przeciwnik(sf::Vector2f size, sf::Vector2f position)
+        : sf::RectangleShape(size) { this->setPosition(position); }
+
+
+    
+    void setBounds(sf::IntRect bohater)
+    {
+        winddown = bohater.top + bohater.height;
+        windup = bohater.top;
+        windleft = bohater.left;
+        windright = bohater.left + bohater.width;
+    }
+    void grawitacja(sf::FloatRect podloga, sf::FloatRect podloga2)
+    {
+        if ((this->getGlobalBounds().intersects(podloga) || (this->getGlobalBounds().intersects(podloga2))))
+        {
+
+        }
+        else
+        {
+            this->move(0, 0.2);
+        }
+
+    }
+
     void bounce()
     {
         sf::FloatRect rectangle_bounds = this->getGlobalBounds();
@@ -98,6 +170,10 @@ public:
         windleft = floor.left;
         windright = floor.left + floor.width;
     }
+        void teksturowanie(sf::Texture podloga)
+        {
+            this->setTexture(&podloga);
+        }
     
 
 private:
@@ -125,21 +201,25 @@ int main()
 
     sf::Vector2f size_floor(1200, 60);
     sf::Vector2f position_floor(0, 940);
-    floorr floorr1(size_floor, position_floor);
-
-    sf::Texture podloga;
-    podloga.loadFromFile("floor.png");
-    floorr1.setTexture(&podloga);
-
-
-
     sf::Vector2f size_floor2(400, 60);
     sf::Vector2f position_floor2(500, 500);
-    floorr floorr2(size_floor2, position_floor2);
-    floorr2.setTexture(&podloga);
+    sf::Texture podloga;
+    podloga.loadFromFile("floor.png");
 
 
+
+    std::vector<floorr> podlogi;
+    podlogi.emplace_back(floorr(size_floor, position_floor));
+    podlogi.emplace_back(floorr(size_floor2, position_floor2));
+
+
+    for (auto& pod : podlogi) {
+        pod.teksturowanie(podloga);
+    }
     
+    sf::FloatRect rectangle_bounds2 = podlogi[0].getGlobalBounds();
+    sf::FloatRect rectangle_bounds3 = podlogi[1].getGlobalBounds();
+
 
     while (window.isOpen()) {
 
@@ -148,7 +228,11 @@ int main()
 
             if (event.type == sf::Event::Closed)
                 window.close();
+            if (event.key.code== sf::Keyboard::Space) {
 
+                bohater.skakansko(rectangle_bounds3);
+
+            }
 
 
           
@@ -162,24 +246,28 @@ int main()
 
         sf::FloatRect rectangle_bounds = bohater.getGlobalBounds();
         window.draw(bohater);
-        window.draw(floorr1);
-        window.draw(floorr2);
         bohater.poruszanie();
 
-        window.display();
 
-        if ((bohater.getGlobalBounds().intersects(floorr1.getGlobalBounds()  )|| (bohater.getGlobalBounds().intersects(floorr2.getGlobalBounds()))))
-        {
-            
+        for (const auto& pod : podlogi) {
+            window.draw(pod);
         }
-        else
-        {
-            bohater.move(0, 0.2);
-        }
-        sf::FloatRect rectangle_bounds2 = floorr1.getGlobalBounds();
-        sf::FloatRect rectangle_bounds3 = floorr2.getGlobalBounds();
-        bohater.skakansko(rectangle_bounds3);
+
+        
+        bohater.grawitacja(rectangle_bounds2, rectangle_bounds3);
+
+
+
+        window.display();
     }
+
+
+        
+
+        
+
+
+
 
     return 0;
 }
