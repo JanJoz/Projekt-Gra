@@ -46,11 +46,11 @@ public:
 
             if (rectangle_bounds.intersects(podloga))
             {
-                this->move(0, 0.4);
+                this->move(0, 0.2);
             }
             else
             {
-                this->move(0, -0.4);
+                this->move(0, -0.2);
             }
         }
 
@@ -184,6 +184,24 @@ private:
 
 };
 
+class pocisk : public sf::CircleShape {
+public:
+    pocisk(float radius, sf::Vector2f position)
+        : sf::CircleShape(radius) { this->setPosition(position); }
+
+    void poruszanie()
+    {
+        this->move(0.5, 0);
+        this->setFillColor(sf::Color(255,0,0));
+    
+    }
+
+
+
+private:
+
+};
+
 
 int main()
 {
@@ -192,12 +210,31 @@ int main()
     sf::Vector2f size(98.0, 124.0);
     sf::Vector2f position(20.0, 800.0);
     bohater bohater(size, position);
+    sf::Vector2f sizep(98.0, 124.0);
+    sf::Vector2f positionp(1100, 800);
+    przeciwnik przeciwnik1(sizep, positionp);
+
 
     sf::Texture teksturabohatera;
     teksturabohatera.loadFromFile("CT.jpg");
     teksturabohatera.setSmooth(true);
     bohater.setTexture(&teksturabohatera);
+
+    sf::Vector2f positionpoc(1100, 1100);
     
+    pocisk P1(5, positionpoc);
+    std::vector<pocisk> pociski;
+    sf::Vector2f bohatercentrum;
+    pociski.push_back(pocisk(P1));
+     
+
+
+    sf::Texture teksturaprzeciwnika;
+    teksturaprzeciwnika.loadFromFile("TT.jpg");
+    teksturaprzeciwnika.setSmooth(true);
+    przeciwnik1.setTexture(&teksturaprzeciwnika);
+
+
 
     sf::Vector2f size_floor(1200, 60);
     sf::Vector2f position_floor(0, 940);
@@ -220,7 +257,6 @@ int main()
     sf::FloatRect rectangle_bounds2 = podlogi[0].getGlobalBounds();
     sf::FloatRect rectangle_bounds3 = podlogi[1].getGlobalBounds();
 
-
     while (window.isOpen()) {
 
         sf::Event event;
@@ -234,6 +270,14 @@ int main()
 
             }
 
+            if (event.key.code == sf::Keyboard::Z) {
+
+                P1.setPosition(bohatercentrum);
+
+                pociski.push_back(pocisk(P1));
+                
+            }
+
 
           
         }
@@ -245,9 +289,30 @@ int main()
 
 
         sf::FloatRect rectangle_bounds = bohater.getGlobalBounds();
+        sf::FloatRect rectangle_bounds10 = przeciwnik1.getGlobalBounds();
+        
+        bohatercentrum = sf::Vector2f(bohater.getPosition().x+65, bohater.getPosition().y+70);
+
+
+   
+
         window.draw(bohater);
+        window.draw(przeciwnik1);
+
+        for (size_t i = 0; i < pociski.size(); i++)
+        {
+            window.draw(pociski[i]);
+        }
+
+
         bohater.poruszanie();
 
+        for (size_t i = 0; i < pociski.size(); i++)
+        {
+            pociski[i].poruszanie();
+        }
+
+            
 
         for (const auto& pod : podlogi) {
             window.draw(pod);
@@ -255,6 +320,7 @@ int main()
 
         
         bohater.grawitacja(rectangle_bounds2, rectangle_bounds3);
+        przeciwnik1.grawitacja(rectangle_bounds2, rectangle_bounds3);
 
 
 
