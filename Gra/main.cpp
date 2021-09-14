@@ -41,7 +41,7 @@ public:
     void skakansko(sf::FloatRect podloga)
     {
         sf::FloatRect rectangle_bounds = this->getGlobalBounds();
-        for (int i = 0; i < 500;i++) {
+        for (int i = 0; i < 500; i++) {
 
 
             if (rectangle_bounds.intersects(podloga))
@@ -77,6 +77,7 @@ public:
             a_y = 1;
         }
     }
+
 
 private:
     int speed_x = 0;
@@ -195,7 +196,22 @@ public:
         this->setFillColor(sf::Color(255,0,0));
     
     }
+    void kolizja(sf::FloatRect p1, sf::FloatRect p2, sf::FloatRect p3)
+    {
+        if (this->getGlobalBounds().intersects(p1))
+        {
+            
+        }
+        if (this->getGlobalBounds().intersects(p2))
+        {
+            
+        }
+        if (this->getGlobalBounds().intersects(p3))
+        {
+           
+        }
 
+    }
 
 
 private:
@@ -211,8 +227,14 @@ int main()
     sf::Vector2f position(20.0, 800.0);
     bohater bohater(size, position);
     sf::Vector2f sizep(98.0, 124.0);
-    sf::Vector2f positionp(1100, 800);
-    przeciwnik przeciwnik1(sizep, positionp);
+    sf::Vector2f positionp1(1100, 800);
+    sf::Vector2f positionp2(700, 800);
+    sf::Vector2f positionp3(600, 350);
+
+
+    przeciwnik przeciwnik1(sizep, positionp1);
+    przeciwnik przeciwnik2(sizep, positionp2);
+    przeciwnik przeciwnik3(sizep, positionp3);
 
 
     sf::Texture teksturabohatera;
@@ -233,6 +255,8 @@ int main()
     teksturaprzeciwnika.loadFromFile("TT.jpg");
     teksturaprzeciwnika.setSmooth(true);
     przeciwnik1.setTexture(&teksturaprzeciwnika);
+    przeciwnik2.setTexture(&teksturaprzeciwnika);
+    przeciwnik3.setTexture(&teksturaprzeciwnika);
 
 
 
@@ -244,10 +268,13 @@ int main()
     podloga.loadFromFile("floor.png");
 
 
-
     std::vector<floorr> podlogi;
     podlogi.emplace_back(floorr(size_floor, position_floor));
     podlogi.emplace_back(floorr(size_floor2, position_floor2));
+
+    bool p1z = true;
+    bool p2z = true;
+    bool p3z = true;
 
 
     for (auto& pod : podlogi) {
@@ -267,6 +294,7 @@ int main()
             if (event.key.code== sf::Keyboard::Space) {
 
                 bohater.skakansko(rectangle_bounds3);
+
 
             }
 
@@ -289,7 +317,9 @@ int main()
 
 
         sf::FloatRect rectangle_bounds = bohater.getGlobalBounds();
-        sf::FloatRect rectangle_bounds10 = przeciwnik1.getGlobalBounds();
+        sf::FloatRect przeciwnik1bounds = przeciwnik1.getGlobalBounds();
+        sf::FloatRect przeciwnik2bounds = przeciwnik2.getGlobalBounds();
+        sf::FloatRect przeciwnik3bounds = przeciwnik3.getGlobalBounds();
         
         bohatercentrum = sf::Vector2f(bohater.getPosition().x+65, bohater.getPosition().y+70);
 
@@ -298,6 +328,8 @@ int main()
 
         window.draw(bohater);
         window.draw(przeciwnik1);
+        window.draw(przeciwnik2);
+        window.draw(przeciwnik3);
 
         for (size_t i = 0; i < pociski.size(); i++)
         {
@@ -310,24 +342,52 @@ int main()
         for (size_t i = 0; i < pociski.size(); i++)
         {
             pociski[i].poruszanie();
+            pociski[i].kolizja(przeciwnik1bounds, przeciwnik2bounds, przeciwnik3bounds);
         }
+        for (size_t i = 0; i < pociski.size(); i++)
+        {
+            sf::FloatRect pociskb = pociski[i].getGlobalBounds();
+            if (pociskb.intersects(przeciwnik1bounds))
+            {
+                
+                p1z = false;
+                
+            }
+            if (pociskb.intersects(przeciwnik2bounds))
+            {
 
-            
+                p2z = false;
+
+            }
+            if (pociskb.intersects(przeciwnik3bounds))
+            {
+
+                p3z = false;
+            }
+        }
+        
 
         for (const auto& pod : podlogi) {
             window.draw(pod);
         }
 
-        
+
+
         bohater.grawitacja(rectangle_bounds2, rectangle_bounds3);
         przeciwnik1.grawitacja(rectangle_bounds2, rectangle_bounds3);
+        przeciwnik2.grawitacja(rectangle_bounds2, rectangle_bounds3);
+        przeciwnik3.grawitacja(rectangle_bounds2, rectangle_bounds3);
 
 
 
         window.display();
+        if ((p1z == false) && (p2z == false) && (p3z == false))
+        {
+            window.close();
+        }
     }
 
-
+   
         
 
         
