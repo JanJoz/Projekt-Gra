@@ -1,171 +1,385 @@
 #include"Precompiled.h"
 
-using namespace sf;
-
-
-float offsetX = 0, offsetY = 0;
-
-
-const int H = 12;
-const int W = 40;
-
-
-String TileMap[H] = {
-
-"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
-"B                                B     B",
-"B                                B     B",
-"B                                B     B",
-"B                                B     B",
-"B         0000                BBBB     B",
-"B                                B     B",
-"BBB                              B     B",
-"B              BB                BB    B",
-"B              BB                      B",
-"B    B         BB         BB           B",
-"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
-
-};
-
-class PLAYER {
-
+class floorr : public sf::RectangleShape {
 public:
+    floorr(sf::Vector2f size, sf::Vector2f position)
+        : sf::RectangleShape(size) { this->setPosition(position); }
 
-	float dx, dy;
-	FloatRect rect;
-	bool onGround;
-	Sprite sprite;
-	float currentFrame;
-
-	PLAYER(Texture& image)
-	{
-		sprite.setTexture(image);
-		rect = FloatRect(7 * 32, 9 * 32, 40, 50);
-
-		dx = dy = 0.1;
-		currentFrame = 0;
-	}
+    void setBounds(sf::IntRect floor)
+    {
+        winddown = floor.top + floor.height;
+        windup = floor.top;
+        windleft = floor.left;
+        windright = floor.left + floor.width;
+    }
 
 
-	void update(float time)
-	{
+private:
+    int winddown = 0;
+    int windup = 0;
+    int windleft = 0;
+    int windright = 0;
 
-		rect.left += dx * time;
-		Collision(0);
-
-		if (!onGround) dy = dy + 0.0005 * time;
-		rect.top += dy * time;
-		onGround = false;
-		Collision(1);
-
-
-		currentFrame += 0.005 * time;
-		if (currentFrame > 6) currentFrame -= 6;
-
-		if (dx > 0) sprite.setTextureRect(IntRect(40 * int(currentFrame), 244, 40, 50));
-		if (dx < 0) sprite.setTextureRect(IntRect(40 * int(currentFrame) + 40, 244, -40, 50));
-
-
-		sprite.setPosition(rect.left - offsetX, rect.top - offsetY);
-
-		dx = 0;
-	}
-
-
-
-	void Collision(int dir)
-	{
-		for (int i = rect.top / 32; i < (rect.top + rect.height) / 32; i++)
-			for (int j = rect.left / 32; j < (rect.left + rect.width) / 32; j++)
-			{
-				if (TileMap[i][j] == 'B')
-				{
-					if ((dx > 0) && (dir == 0)) rect.left = j * 32 - rect.width;
-					if ((dx < 0) && (dir == 0)) rect.left = j * 32 + 32;
-					if ((dy > 0) && (dir == 1)) { rect.top = i * 32 - rect.height;  dy = 0;   onGround = true; }
-					if ((dy < 0) && (dir == 1)) { rect.top = i * 32 + 32;   dy = 0; }
-				}
-
-				if (TileMap[i][j] == '0')
-				{
-					TileMap[i][j] = ' ';
-				}
-
-			}
-
-	}
 };
+
+class bohater : public sf::RectangleShape {
+public:
+    bohater(sf::Vector2f size, sf::Vector2f position)
+        : sf::RectangleShape(size) { this->setPosition(position); }
+
+    void poruszanie()
+    {
+        sf::FloatRect rectangle_bounds = this->getGlobalBounds();
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && 0 < rectangle_bounds.left) {
+            this->move(-0.1, 0);
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && 1200 > rectangle_bounds.left+rectangle_bounds.width )  {
+            this->move(0.1, 0);
+        }
+
+
+
+    }
+    void grawitacja(std::vector<floorr> podlogi)
+    {
+        bool kolizja = false;
+        for (size_t i = 0; i < podlogi.size(); i++)
+        {
+            sf::FloatRect cos = podlogi[i].getGlobalBounds();
+            if (this->getGlobalBounds().intersects(cos))
+            {
+                kolizja = true;
+            }
+            if (kolizja == false)
+            {
+                this->move(0, 0.2);
+            }
+        }
+
+    }
+    void skakansko(sf::FloatRect podloga)
+    {
+
+
+        sf::FloatRect rectangle_bounds = this->getGlobalBounds();
+        skok = true;
+        a_y = 0.3;
+
+
+
+    }
+
+
+
+private:
+    int speed_x = 0;
+    int speed_y = 0;
+    int speed_z = 0;
+    int winddown = 0;
+    int windup = 0;
+    int windleft = 0;
+    int windright = 0;
+    int a_x = 0;
+    int a_y = 0;
+    bool is_selected = false;
+    bool skok = false;
+
+
+};
+
+class przeciwnik : public sf::RectangleShape {
+public:
+    przeciwnik(sf::Vector2f size, sf::Vector2f position)
+        : sf::RectangleShape(size) { this->setPosition(position); }
+
+
+
+    void setBounds(sf::IntRect bohater)
+    {
+        winddown = bohater.top + bohater.height;
+        windup = bohater.top;
+        windleft = bohater.left;
+        windright = bohater.left + bohater.width;
+    }
+    void grawitacja(sf::FloatRect podloga, sf::FloatRect podloga2)
+    {
+        if ((this->getGlobalBounds().intersects(podloga) || (this->getGlobalBounds().intersects(podloga2))))
+        {
+
+        }
+        else
+        {
+            this->move(0, 0.2);
+        }
+
+    }
+
+    void bounce()
+    {
+        sf::FloatRect rectangle_bounds = this->getGlobalBounds();
+        if (rectangle_bounds.left <= windleft)
+        {
+            a_x = 1;
+        }
+        if (rectangle_bounds.top + rectangle_bounds.height >= winddown)
+        {
+            a_y = -1;
+        }
+        if (rectangle_bounds.left + rectangle_bounds.width >= windright)
+        {
+            a_x = -1;
+        }
+        if (rectangle_bounds.top <= windup)
+        {
+            a_y = 1;
+        }
+    }
+
+private:
+    int speed_x = 0;
+    int speed_y = 0;
+    int speed_z = 0;
+    int winddown = 0;
+    int windup = 0;
+    int windleft = 0;
+    int windright = 0;
+    int a_x = 0;
+    int a_y = 0;
+    bool is_selected = false;
+
+
+
+};
+
+
+
+class pocisk : public sf::CircleShape {
+public:
+    pocisk(float radius, sf::Vector2f position)
+        : sf::CircleShape(radius) { this->setPosition(position); }
+
+    void poruszanie()
+    {
+        this->move(0.5, 0);
+        this->setFillColor(sf::Color(255, 0, 0));
+
+    }
+    void kolizja(sf::FloatRect p1, sf::FloatRect p2, sf::FloatRect p3)
+    {
+        if (this->getGlobalBounds().intersects(p1))
+        {
+
+        }
+        if (this->getGlobalBounds().intersects(p2))
+        {
+
+        }
+        if (this->getGlobalBounds().intersects(p3))
+        {
+
+        }
+
+    }
+
+
+private:
+
+};
+
 
 int main()
 {
-	RenderWindow window(VideoMode(600, 400), "Test!");
-
-	Texture t;
-	t.loadFromFile("CT.jng");
-
-	float currentFrame = 0;
-
-	PLAYER p(t);
-
-	Clock clock;
-
-	RectangleShape rectangle(Vector2f(32, 32));
-
-	while (window.isOpen())
-	{
-		float time = clock.getElapsedTime().asMicroseconds();
-		clock.restart();
-
-		time = time / 700;
-
-		if (time > 20) time = 20;
-
-		Event event;
-		while (window.pollEvent(event))
-		{
-			if (event.type == Event::Closed)
-				window.close();
-		}
-
-		if (Keyboard::isKeyPressed(Keyboard::Left))
-		{
-			p.dx = -0.1;
-
-		}
-
-		if (Keyboard::isKeyPressed(Keyboard::Right))
-		{
-			p.dx = 0.1;
-		}
-
-		if (Keyboard::isKeyPressed(Keyboard::Up))
-		{
-			if (p.onGround) { p.dy = -0.35; p.onGround = false; }
-		}
-
-		p.update(time);
-
-		if (p.rect.left > 300) offsetX = p.rect.left - 300;
-		offsetY = p.rect.top - 200;
-
-		window.clear(Color::White);
+    sf::RenderWindow window(sf::VideoMode(1200, 1000), "My window");
+    sf::Clock clock;
+    sf::Vector2f size(98.0, 124.0);
+    sf::Vector2f position(20.0, 800.0);
+    bohater bohater(size, position);
 
 
-		for (int i = 0; i < H; i++)
-			for (int j = 0; j < W; j++)
-			{
-				if (TileMap[i][j] == 'B') rectangle.setFillColor(Color::Black);
 
-				if (TileMap[i][j] == '0')  rectangle.setFillColor(Color::Green);
+    sf::Vector2f sizep(98.0, 124.0);
+    sf::Vector2f positionp1(1100, 800);
+    sf::Vector2f positionp2(700, 800);
+    sf::Vector2f positionp3(600, 350);
 
-				if (TileMap[i][j] == ' ') continue;
+    przeciwnik przeciwnik1(sizep, positionp1);
+    przeciwnik przeciwnik2(sizep, positionp2);
+    przeciwnik przeciwnik3(sizep, positionp3);
 
-				rectangle.setPosition(j * 32 - offsetX, i * 32 - offsetY);
-				window.draw(rectangle);
-			}
 
-		window.draw(p.sprite);
-		window.display();
-	}
+    sf::Texture teksturabohatera;
+    teksturabohatera.loadFromFile("CT.png");
+    teksturabohatera.setSmooth(true);
+    bohater.setTexture(&teksturabohatera);
 
-	return 0;
+    sf::Vector2f positionpoc(1100, 1100);
+
+    pocisk P1(5, positionpoc);
+    std::vector<pocisk> pociski;
+    sf::Vector2f bohatercentrum;
+    pociski.push_back(pocisk(P1));
+
+
+
+    sf::Texture teksturaprzeciwnika;
+    teksturaprzeciwnika.loadFromFile("TT.png");
+    teksturaprzeciwnika.setSmooth(true);
+    przeciwnik1.setTexture(&teksturaprzeciwnika);
+    przeciwnik2.setTexture(&teksturaprzeciwnika);
+    przeciwnik3.setTexture(&teksturaprzeciwnika);
+
+
+
+    sf::Vector2f size_floor(1200, 60);
+    sf::Vector2f position_floor(0, 940);
+    sf::Vector2f size_floor2(400, 60);
+    sf::Vector2f position_floor2(500, 500);
+    sf::Vector2f size_floor3(60, 200);
+    sf::Vector2f position_floor3(200, 740);
+
+    sf::Texture podloga;
+
+    podloga.loadFromFile("floor.png");
+
+
+    std::vector<floorr> podlogi;
+    podlogi.emplace_back(floorr(size_floor, position_floor));
+    podlogi.emplace_back(floorr(size_floor2, position_floor2));
+    podlogi.emplace_back(floorr(size_floor3, position_floor3));
+
+    bool p1z = true;
+    bool p2z = true;
+    bool p3z = true;
+
+
+    for (size_t i = 0; i < podlogi.size(); i++)
+    {
+        podlogi[i].setTexture(&podloga);
+    }
+    sf::FloatRect rectangle_bounds2 = podlogi[0].getGlobalBounds();
+    sf::FloatRect rectangle_bounds3 = podlogi[1].getGlobalBounds();
+
+    while (window.isOpen()) {
+
+        float time = clock.getElapsedTime().asMicroseconds();
+        clock.restart();
+
+        time = time / 700;
+
+        if (time > 20) time = 20;
+
+        sf::Event event;
+        while (window.pollEvent(event)) {
+
+            if (event.type == sf::Event::Closed)
+                window.close();
+            if (event.key.code == sf::Keyboard::Up) {
+
+                bohater.skakansko(rectangle_bounds3);
+
+
+            }
+
+            if (event.key.code == sf::Keyboard::Z) {
+
+                P1.setPosition(bohatercentrum);
+
+                pociski.push_back(pocisk(P1));
+
+            }
+
+
+
+        }
+
+
+
+
+
+        window.clear(sf::Color::White);
+
+        sf::Time elapsed = clock.restart();
+
+
+        sf::FloatRect rectangle_bounds = bohater.getGlobalBounds();
+        
+        sf::FloatRect przeciwnik1bounds = przeciwnik1.getGlobalBounds();
+        sf::FloatRect przeciwnik2bounds = przeciwnik2.getGlobalBounds();
+        sf::FloatRect przeciwnik3bounds = przeciwnik3.getGlobalBounds();
+
+        bohatercentrum = sf::Vector2f(bohater.getPosition().x + 65, bohater.getPosition().y + 70);
+
+
+
+
+        window.draw(bohater);
+        window.draw(przeciwnik1);
+        window.draw(przeciwnik2);
+        window.draw(przeciwnik3);
+
+        for (size_t i = 0; i < pociski.size(); i++)
+        {
+            window.draw(pociski[i]);
+        }
+
+
+        bohater.poruszanie();
+
+        for (size_t i = 0; i < pociski.size(); i++)
+        {
+            pociski[i].poruszanie();
+            pociski[i].kolizja(przeciwnik1bounds, przeciwnik2bounds, przeciwnik3bounds);
+        }
+        for (size_t i = 0; i < pociski.size(); i++)
+        {
+            sf::FloatRect pociskb = pociski[i].getGlobalBounds();
+            if (pociskb.intersects(przeciwnik1bounds))
+            {
+
+                p1z = false;
+
+            }
+            if (pociskb.intersects(przeciwnik2bounds))
+            {
+
+                p2z = false;
+
+            }
+            if (pociskb.intersects(przeciwnik3bounds))
+            {
+
+                p3z = false;
+            }
+        }
+
+
+        for (const auto& pod : podlogi) {
+            window.draw(pod);
+        }
+
+
+
+        bohater.grawitacja(podlogi);
+        przeciwnik1.grawitacja(rectangle_bounds2, rectangle_bounds3);
+        przeciwnik2.grawitacja(rectangle_bounds2, rectangle_bounds3);
+        przeciwnik3.grawitacja(rectangle_bounds2, rectangle_bounds3);
+
+
+
+        window.display();
+        if ((p1z == false) && (p2z == false) && (p3z == false))
+        {
+            window.close();
+        }
+    }
+
+
+
+
+
+
+
+
+
+    return 0;
+}
